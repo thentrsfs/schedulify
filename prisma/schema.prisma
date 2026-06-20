@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. Uloge korisnika u sistemu
+enum Role {
+  SUPER_ADMIN
+  OWNER
+  STAFF
+  CUSTOMER
+}
+
+// 2. Statusi zakazanog termina
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  PAID
+}
+
+// 3. Tabela za sve Korisnike
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  name          String?
+  image         String?
+  role          Role         @default(CUSTOMER)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // Relacije
+  ownedBusinesses Business[]   // Ako je korisnik OWNER, može imati biznise
+  employeeProfile Employee?    // Ako je korisnik STAFF, ovde stoje detalji o poslu
+  appointments    Appointment[] // Ako je CUSTOMER, ovde su njegova zakazivanja
+}
+
+// 4. Tabela za Biznise (Salone/Ordinacije)
+model Business {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique // npr. "frizerski-salon-glow" za URL
+  address     String
+  phone       String?
+  logo        String?
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relacije
+  owner        User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  services     Service[]
+  employees    Employee[]
+  appointments Appointment[]
+}
+
+// 5. Tabela za Usluge
+model Service {
+  id          String   @id @default(cuid())
+  businessId  String
+  name        String
+  description String?
+  price       Float
+  duration    Int      // Trajanje u minutima (npr. 30, 60, 90)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relacije
+  business     Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+}
+
+// 6. Tabela za Zaposlene (Radno vreme i veza sa salonom)
+model Employee {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  businessId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Ovde možemo čuvati radno vreme u JSON formatu (npr. { ponedeljak: { start: "09:00", end: "17:00" } })
+  workingHours Json?     
+
+  // Relacije
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business     Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+}
+
+// 7. Tabela za Zakazivanja (Srce aplikacije)
+model Appointment {
+  id          String            @id @default(cuid())
+  businessId  String
+  customerId  String
+  employeeId  String
+  serviceId   String
+  startTime   DateTime          // Tačan datum i vreme početka (npr. 2026-06-25T14:00:00Z)
+  endTime     DateTime          // Izračunato vreme završetka
+  status      AppointmentStatus @default(PENDING)
+  notes       String?           // Napomena klijenta koju smo dodali!
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relacije
+  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customer     User     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  service      Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
