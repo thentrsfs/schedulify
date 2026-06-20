@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
+
+import { ClerkProvider } from '@clerk/nextjs';
+import { dark } from '@clerk/ui/themes';
 import Navbar from '@/components/Navbar';
 
 // Inter za regularan tekst
@@ -28,19 +31,21 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html
-			lang='en'
-			className={cn(
-				'h-full',
-				'antialiased',
-				'dark',
-				inter.variable,
-				spaceGrotesk.variable,
-			)}>
-			<body className='min-h-full flex flex-col bg-[#09090b] text-zinc-50 font-sans antialiased'>
-				<Navbar />
-				{children}
-			</body>
-		</html>
+		<ClerkProvider appearance={{ theme: dark }}>
+			<html
+				lang='en'
+				className={cn(
+					'h-full',
+					'antialiased',
+					'dark',
+					inter.variable,
+					spaceGrotesk.variable,
+				)}>
+				<body className='min-h-full flex flex-col bg-[#09090b] text-zinc-50 font-sans antialiased'>
+					<Navbar />
+					{children}
+				</body>
+			</html>
+		</ClerkProvider>
 	);
 }
