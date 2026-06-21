@@ -50,7 +50,7 @@ export default async function OnboardingPage() {
 	}
 
 	return (
-		<div className='w-full min-h-screen bg-[#09090b] flex items-center justify-center p-6 font-sans'>
+		<div className='w-full min-h-full bg-[#09090b] flex items-center justify-center p-6 font-sans'>
 			<div className='w-full max-w-md border border-zinc-900 bg-[#0c0c0e] p-8 rounded-none shadow-2xl'>
 				<div className='space-y-2 mb-8 border-b border-zinc-900 pb-6'>
 					<span className='font-mono text-xs uppercase tracking-widest text-emerald-400'>

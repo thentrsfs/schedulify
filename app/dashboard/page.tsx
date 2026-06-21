@@ -47,7 +47,7 @@ export default async function DashboardPage() {
 	const hasNoBusiness = dbUser.ownedBusinesses.length === 0;
 
 	return (
-		<div className='w-full min-h-[calc(100vh-4rem)] bg-[#09090b] p-6 lg:p-12 font-sans'>
+		<div className='w-full h-full bg-[#09090b] p-6 lg:p-12 font-sans'>
 			<div className='max-w-7xl mx-auto'>
 				{/* DASHBOARD HEADER */}
 				<div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-900 pb-8 mb-8'>

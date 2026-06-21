@@ -41,9 +41,11 @@ export default function RootLayout({
 					inter.variable,
 					spaceGrotesk.variable,
 				)}>
-				<body className='min-h-full flex flex-col bg-[#09090b] text-zinc-50 font-sans antialiased'>
+				<body className='h-full flex flex-col bg-[#09090b] text-zinc-50 font-sans antialiased'>
 					<Navbar />
-					{children}
+					<div className='flex-1 min-h-0 w-full overflow-y-auto'>
+						{children}
+					</div>
 				</body>
 			</html>
 		</ClerkProvider>

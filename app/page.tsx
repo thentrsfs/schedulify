@@ -10,7 +10,7 @@ export default async function HomePage() {
 	if (userId) redirect('/dashboard');
 
 	return (
-		<div className='w-full min-h-screen bg-[#09090b] text-white font-sans selection:bg-emerald-500 selection:text-zinc-950 flex flex-col items-center justify-center'>
+		<div className='w-full min-h-full bg-[#09090b] text-white font-sans selection:bg-emerald-500 selection:text-zinc-950 flex flex-col items-center justify-center'>
 			{/* HERO SEKCIJA */}
 			<main className='max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-16 flex flex-col items-center justify-center text-center'>
 				<div className='inline-block border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-emerald-400 mb-6'>
