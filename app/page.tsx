@@ -1,50 +1,64 @@
+import { auth } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-export default function Home() {
-	return (
-		<div className='w-full min-h-[calc(100vh-4rem)] bg-[#09090b] flex flex-col items-center justify-center px-4 relative overflow-hidden'>
-			{/* Suptilni tech sjaj u pozadini */}
-			<div className='absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none' />
+export default async function HomePage() {
+	// Proveravamo sesiju na serveru
+	const { userId } = await auth();
 
-			<div className='max-w-4xl w-full text-center flex flex-col items-center justify-center relative z-10'>
-				{/* Značka - koristi čist Inter (font-sans) */}
-				<div className='mb-6 rounded-none px-3 py-1 text-xs font-mono tracking-widest uppercase text-emerald-400 bg-emerald-500/5 border border-emerald-500/20'>
-					[ status: production ready ]
+	if (userId) redirect('/dashboard');
+
+	return (
+		<div className='w-full min-h-screen bg-[#09090b] text-white font-sans selection:bg-emerald-500 selection:text-zinc-950 flex flex-col items-center justify-center'>
+			{/* HERO SEKCIJA */}
+			<main className='max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-16 flex flex-col items-center justify-center text-center'>
+				<div className='inline-block border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-emerald-400 mb-6'>
+					[ Status: Production Ready ]
 				</div>
 
-				{/* VELIKI NASLOV - Sada koristi fensi font-heading (Space Grotesk) */}
-				<h1 className='font-heading text-5xl font-bold tracking-tight text-white sm:text-7xl uppercase max-w-4xl leading-none'>
+				<h1 className='text-4xl md:text-6xl lg:text-7xl font-extrabold uppercase tracking-tight max-w-5xl leading-none'>
 					Autonomous Infrastructure For{' '}
-					<span className='text-transparent bg-clip-text bg-linear-to-r from-zinc-100 via-zinc-400 to-zinc-600'>
-						Business Scheduling
-					</span>
+					<span className='text-zinc-500'>Business Scheduling</span>
 				</h1>
 
-				{/* OPIS - Koristi čitljivi Inter (font-sans) */}
-				<p className='mt-8 text-base sm:text-lg leading-relaxed text-zinc-400 max-w-2xl font-sans tracking-wide'>
+				<p className='mt-8 font-sans text-base md:text-lg text-zinc-400 max-w-2xl font-light'>
 					Scale your operation with an automated, multi-tenant scheduling
 					engine. Orchestrate team availability, process global payments via
 					Stripe, and access deep analytical insights out of the box.
 				</p>
 
-				<div className='mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto'>
-					<Button
-						asChild
-						size='lg'
-						className='bg-white hover:bg-zinc-200 text-black font-sans text-sm font-semibold rounded-none px-8 w-full sm:w-auto h-12 transition-all'>
-						<Link href='/register'>Deploy Platform</Link>
-					</Button>
+				{/* HERO DUGMIĆI SA PAMETNOM PROVEROM */}
+				<div className='mt-12 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto'>
+					{userId ? (
+						<Link
+							href='/dashboard'
+							className='w-full sm:w-auto'>
+							<Button className='w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-mono text-xs uppercase tracking-wider rounded-none font-bold h-12 px-8'>
+								Return to Mission Control [Dashboard]
+							</Button>
+						</Link>
+					) : (
+						<Link
+							href='/sign-up'
+							className='w-full sm:w-auto'>
+							<Button className='w-full sm:w-auto bg-white hover:bg-zinc-200 text-zinc-950 font-mono text-xs uppercase tracking-wider rounded-none font-bold h-12 px-8'>
+								Deploy Platform
+							</Button>
+						</Link>
+					)}
 
-					<Button
-						asChild
-						size='lg'
-						variant='outline'
-						className='border-zinc-800 hover:bg-zinc-900 text-zinc-300 hover:text-white font-sans text-sm font-semibold rounded-none px-8 w-full sm:w-auto h-12'>
-						<Link href='#features'>Read Docs</Link>
-					</Button>
+					<Link
+						href='#docs'
+						className='w-full sm:w-auto'>
+						<Button
+							variant='outline'
+							className='w-full sm:w-auto border-zinc-800 bg-[#0c0c0e] hover:bg-zinc-900 text-zinc-400 hover:text-white font-mono text-xs uppercase tracking-wider rounded-none h-12 px-8'>
+							Read Docs
+						</Button>
+					</Link>
 				</div>
-			</div>
+			</main>
 		</div>
 	);
 }
