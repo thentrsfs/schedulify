@@ -48,6 +48,11 @@ export default function DashboardLayout({
 							className='font-mono text-xs uppercase tracking-wider px-3 py-3 rounded-none border border-transparent hover:border-zinc-800 hover:bg-[#09090b] text-zinc-400 hover:text-white transition-all block'>
 							[03] Employee Registry
 						</Link>
+						<Link
+							href='/dashboard/appointments'
+							className='font-mono text-xs uppercase tracking-wider px-3 py-3 rounded-none border border-transparent hover:border-zinc-800 hover:bg-[#09090b] text-zinc-400 hover:text-white transition-all block'>
+							[04] Appointment Matrix
+						</Link>
 					</nav>
 				</div>
 
