@@ -40,7 +40,7 @@ export default async function HomePage() {
 						</Link>
 					) : (
 						<Link
-							href='/sign-up'
+							href='/login'
 							className='w-full sm:w-auto'>
 							<Button className='w-full sm:w-auto bg-white hover:bg-zinc-200 text-zinc-950 font-mono text-xs uppercase tracking-wider rounded-none font-bold h-12 px-8'>
 								Deploy Platform
