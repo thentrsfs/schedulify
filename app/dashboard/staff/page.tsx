@@ -76,7 +76,7 @@ export default async function StaffPage() {
 							<Input
 								name='userId'
 								required
-								placeholder='Unesi korisnički ID iz baze (user_...)'
+								placeholder='Enter user system ID (e.g., user_...)'
 								className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-xs h-11'
 							/>
 							<span className='text-[10px] text-zinc-600 font-mono block mt-1'>
