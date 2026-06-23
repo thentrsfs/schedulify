@@ -1,13 +1,10 @@
 import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export default async function HomePage() {
 	// Proveravamo sesiju na serveru
 	const { userId } = await auth();
-
-	if (userId) redirect('/dashboard');
 
 	return (
 		<div className='w-full min-h-full bg-[#09090b] text-white font-sans selection:bg-emerald-500 selection:text-zinc-950 flex flex-col items-center justify-center'>

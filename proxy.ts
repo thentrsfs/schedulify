@@ -1,6 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-// Definišemo koje su rute javne (dostupne svima)
+// Definišemo koje su rute potpuno javne
 const isPublicRoute = createRouteMatcher([
   '/',
   '/login(.*)',
@@ -8,9 +9,24 @@ const isPublicRoute = createRouteMatcher([
   '/api/webhooks/clerk(.*)',
 ]);
 
+// Definišemo rute koje služe isključivo za autentifikaciju (gde ulogovan korisnik ne treba da ide)
+const isAuthRoute = createRouteMatcher([
+  '/login(.*)',
+  '/register(.*)',
+]);
+
 export default clerkMiddleware(async (auth, request) => {
+  const { userId } = await auth();
+  const currentUrl = new URL(request.url);
+
+  // 🚀 Ako je korisnik ulogovan i pokuša da pristupi landing-u ili auth stranicama
+  if (userId && (currentUrl.pathname === '/' || isAuthRoute(request))) {
+    const dashboardUrl = new URL('/dashboard', request.url);
+    return NextResponse.redirect(dashboardUrl);
+  }
+
+  // Ako ruta nije javna, Clerk zahteva prijavu
   if (!isPublicRoute(request)) {
-    // Ako ruta nije javna, Clerk će automatski zahtevati autentifikaciju
     await auth.protect();
   }
 });
