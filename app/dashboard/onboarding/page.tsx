@@ -1,5 +1,6 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache'; // 🚀 Ključno za brisanje starog keša
 import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,27 +8,29 @@ import { Input } from '@/components/ui/input';
 export default async function OnboardingPage() {
 	// 1. Provera korisnika pri učitavanju stranice
 	const user = await currentUser();
-	if (!user) redirect('/sign-in');
+	if (!user) redirect('/login'); // Usklađeno sa tvojom novom /login rutom
 
 	const dbUser = await db.user.findUnique({
 		where: { id: user.id },
 		include: { ownedBusinesses: true },
 	});
 
-	if (!dbUser || dbUser.role !== 'OWNER' || dbUser.ownedBusinesses.length > 0) {
+	// Ako korisnik već ima biznis, nema potrebe da bude ovde, šalji ga na dashboard
+	if (!dbUser || dbUser.ownedBusinesses.length > 0) {
 		redirect('/dashboard');
 	}
 
-	// 2. Server Action - potpuno izolovana
+	// 2. Server Action
 	async function createBusiness(formData: FormData) {
 		'use server';
 
-		// Čitamo sesiju DIREKTNO unutar akcije da izbegnemo slanje klasa sa stranice
 		const authUser = await currentUser();
 		if (!authUser) throw new Error('Unauthorized');
 
 		const name = formData.get('name') as string;
 		const address = formData.get('address') as string;
+
+		// Bezbedan slug generator
 		const slug = name
 			.toLowerCase()
 			.replace(/[^a-z0-9]+/g, '-')
@@ -35,7 +38,7 @@ export default async function OnboardingPage() {
 
 		if (!name || !address) return;
 
-		// Upis u bazu prolazi sa čistim stringom authUser.id
+		// Upis u Neon bazu preko Prisme
 		await db.business.create({
 			data: {
 				name: name,
@@ -45,7 +48,10 @@ export default async function OnboardingPage() {
 			},
 		});
 
-		// Osvežavamo i vraćamo na dashboard
+		// 🚀 OVO JE MAGIJA: Kažemo ruteru da obriše stari keš za dashboard i pročita bazu ponovo!
+		revalidatePath('/dashboard');
+
+		// Tek sada radimo bezbedan redirect
 		redirect('/dashboard');
 	}
 

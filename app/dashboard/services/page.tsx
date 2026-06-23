@@ -1,12 +1,13 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache'; // 🚀 Dodato za trenutno osvežavanje liste
 import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export default async function ServicesPage() {
 	const user = await currentUser();
-	if (!user) redirect('/sign-in');
+	if (!user) redirect('/login'); // Usklađeno sa tvojom novom rutom za login
 
 	// Vučemo biznis za potrebe renderovanja stranice
 	const business = await db.business.findFirst({
@@ -26,7 +27,6 @@ export default async function ServicesPage() {
 
 		if (!name || !priceStr || !durationStr) return;
 
-		// 🚀 REŠENJE: Ponovo povlačimo biznis unutar akcije da TypeScript bude 100% siguran
 		const authUser = await currentUser();
 		if (!authUser) return;
 
@@ -34,7 +34,6 @@ export default async function ServicesPage() {
 			where: { ownerId: authUser.id },
 		});
 
-		// Ako biznis ne postoji, prekidamo izvršavanje (TypeScript sada zna da nije null)
 		if (!currentBusiness) return;
 
 		await db.service.create({
@@ -42,15 +41,17 @@ export default async function ServicesPage() {
 				name: name,
 				price: parseFloat(priceStr),
 				duration: parseInt(durationStr),
-				businessId: currentBusiness.id, // <-- Nema više greške!
+				businessId: currentBusiness.id,
 			},
 		});
 
-		redirect('/dashboard/services');
+		// 🚀 Čistimo keš za usluge tako da desna kolona odmah prikaže novu uslugu na klik!
+		revalidatePath('/dashboard/services');
 	}
 
 	return (
-		<div className='w-full min-h-[calc(100vh-4rem)] bg-[#09090b] p-6 lg:p-12 font-sans text-white'>
+		/* 🚀 Zamenjeno min-h-[calc(100vh-4rem)] sa min-h-full da se uklopi u novi layout */
+		<div className='w-full min-h-full pt-12 bg-[#09090b] font-sans text-white'>
 			<div className='max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8'>
 				{/* LEVA STRANA: FORMA ZA DODAVANJE */}
 				<div className='border border-zinc-900 bg-[#0c0c0e] p-6 h-fit'>
