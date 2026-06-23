@@ -60,7 +60,7 @@ export default async function ServicesPage() {
 							{'[ node: service_registry ]'}
 						</span>
 						<h2 className='text-xl font-bold uppercase tracking-tight'>
-							Dodaj Novu Uslugu
+							Add New Service
 						</h2>
 					</div>
 
@@ -69,12 +69,12 @@ export default async function ServicesPage() {
 						className='space-y-4'>
 						<div className='space-y-2'>
 							<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-								Naziv Usluge
+								Service Name
 							</label>
 							<Input
 								name='name'
 								required
-								placeholder='npr. Muško Šišanje'
+								placeholder='e.g. Haircut'
 								className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-sm'
 							/>
 						</div>
@@ -82,19 +82,19 @@ export default async function ServicesPage() {
 						<div className='grid grid-cols-2 gap-4'>
 							<div className='space-y-2'>
 								<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-									Cena ($ ili RSD)
+									Price (EUR)
 								</label>
 								<Input
 									name='price'
 									type='number'
 									required
-									placeholder='1500'
+									placeholder='20'
 									className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-sm'
 								/>
 							</div>
 							<div className='space-y-2'>
 								<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-									Trajanje (min)
+									Duration (min)
 								</label>
 								<Input
 									name='duration'
@@ -121,7 +121,7 @@ export default async function ServicesPage() {
 							{`[ active_services // count: ${business.services?.length || 0} ]`}
 						</span>
 						<h2 className='text-xl font-bold uppercase tracking-tight'>
-							Meniji i Katalozi Usluga
+							Service Menus & Catalogs
 						</h2>
 					</div>
 
@@ -140,12 +140,12 @@ export default async function ServicesPage() {
 											{service.name}
 										</h3>
 										<p className='text-xs text-zinc-500 font-mono mt-1'>
-											Trajanje: {service.duration} min
+											Duration: {service.duration} min
 										</p>
 									</div>
 									<div className='flex justify-between items-center border-t border-zinc-900 pt-3 mt-4'>
 										<span className='text-emerald-400 font-mono text-sm font-bold'>
-											{service.price}.00 RSD
+											{service.price}.00 EUR
 										</span>
 										<span className='font-mono text-[9px] text-zinc-600 uppercase'>
 											{'[ active ]'}

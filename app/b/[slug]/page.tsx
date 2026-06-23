@@ -45,7 +45,7 @@ export default async function PublicBookingPage({
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-zinc-950 pb-6'>
 						<div className='space-y-2'>
 							<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-								Vaše Ime i Prezime
+								Your Full Name
 							</label>
 							<Input
 								name='clientName'
@@ -56,7 +56,7 @@ export default async function PublicBookingPage({
 						</div>
 						<div className='space-y-2'>
 							<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-								Vaš Email
+								Your Email
 							</label>
 							<Input
 								name='clientEmail'
@@ -71,13 +71,13 @@ export default async function PublicBookingPage({
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
 						<div className='space-y-2'>
 							<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-								Izaberite Uslugu
+								Choose a Service
 							</label>
 							<select
 								name='serviceId'
 								required
 								className='w-full bg-[#09090b] border border-zinc-800 text-white rounded-none font-mono text-xs h-11 px-3 focus:outline-none focus:border-emerald-500'>
-								<option value=''>-- Meni Usluga --</option>
+								<option value=''>-- Services --</option>
 								{business.services.map((s) => (
 									<option
 										key={s.id}
@@ -90,13 +90,13 @@ export default async function PublicBookingPage({
 
 						<div className='space-y-2'>
 							<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-								Izaberite Eksperta
+								Choose an Expert
 							</label>
 							<select
 								name='employeeId'
 								required
 								className='w-full bg-[#09090b] border border-zinc-800 text-white rounded-none font-mono text-xs h-11 px-3 focus:outline-none focus:border-emerald-500'>
-								<option value=''>-- Slobodni Operativci --</option>
+								<option value=''>-- Available Operators --</option>
 								{business.employees.map((e) => (
 									<option
 										key={e.id}
@@ -111,7 +111,7 @@ export default async function PublicBookingPage({
 					<div className='grid grid-cols-2 gap-4 border-t border-zinc-950 pt-4'>
 						<div className='space-y-2'>
 							<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-								Datum
+								Date
 							</label>
 							<Input
 								type='date'
@@ -122,7 +122,7 @@ export default async function PublicBookingPage({
 						</div>
 						<div className='space-y-2'>
 							<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-								Vreme
+								Time
 							</label>
 							<Input
 								type='time'
@@ -135,7 +135,7 @@ export default async function PublicBookingPage({
 
 					<div className='space-y-2'>
 						<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-							Poruka ili Napomena
+							Additional Notes
 						</label>
 						<Input
 							name='notes'

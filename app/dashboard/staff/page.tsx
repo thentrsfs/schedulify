@@ -62,7 +62,7 @@ export default async function StaffPage() {
 							{'[ node: employee_registry ]'}
 						</span>
 						<h2 className='text-xl font-bold uppercase tracking-tight'>
-							Dodaj Zaposlenog
+							Add New Employee
 						</h2>
 					</div>
 
@@ -71,7 +71,7 @@ export default async function StaffPage() {
 						className='space-y-4'>
 						<div className='space-y-2'>
 							<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-								User ID zaposlenog
+								User ID of the Employee
 							</label>
 							<Input
 								name='userId'
@@ -80,8 +80,7 @@ export default async function StaffPage() {
 								className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-xs h-11'
 							/>
 							<span className='text-[10px] text-zinc-600 font-mono block mt-1'>
-								* Trenutno spajamo preko ID-ja korisnika koji već postoji u
-								sistemu.
+								* Right now we can only add employees by their existing ID.
 							</span>
 						</div>
 
@@ -100,7 +99,7 @@ export default async function StaffPage() {
 							{`[ active_employees // count: ${business.employees?.length || 0} ]`}
 						</span>
 						<h2 className='text-xl font-bold uppercase tracking-tight'>
-							Personalni Registar
+							Personnel Registry
 						</h2>
 					</div>
 
@@ -119,7 +118,7 @@ export default async function StaffPage() {
 									</div>
 									<div className='min-w-0 flex-1'>
 										<h3 className='font-medium text-white text-base truncate'>
-											{employee.user?.name || 'Korisnik'}
+											{employee.user?.name || 'User'}
 										</h3>
 										<p className='text-[10px] text-zinc-500 font-mono truncate'>
 											{employee.user?.email}
