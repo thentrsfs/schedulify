@@ -1,12 +1,13 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache'; // 🚀 Dodato za trenutno osvežavanje liste
 import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export default async function ServicesPage() {
 	const user = await currentUser();
-	if (!user) redirect('/sign-in');
+	if (!user) redirect('/login'); // Usklađeno sa tvojom novom rutom za login
 
 	// Vučemo biznis za potrebe renderovanja stranice
 	const business = await db.business.findFirst({
@@ -26,7 +27,6 @@ export default async function ServicesPage() {
 
 		if (!name || !priceStr || !durationStr) return;
 
-		// 🚀 REŠENJE: Ponovo povlačimo biznis unutar akcije da TypeScript bude 100% siguran
 		const authUser = await currentUser();
 		if (!authUser) return;
 
@@ -34,7 +34,6 @@ export default async function ServicesPage() {
 			where: { ownerId: authUser.id },
 		});
 
-		// Ako biznis ne postoji, prekidamo izvršavanje (TypeScript sada zna da nije null)
 		if (!currentBusiness) return;
 
 		await db.service.create({
@@ -42,15 +41,17 @@ export default async function ServicesPage() {
 				name: name,
 				price: parseFloat(priceStr),
 				duration: parseInt(durationStr),
-				businessId: currentBusiness.id, // <-- Nema više greške!
+				businessId: currentBusiness.id,
 			},
 		});
 
-		redirect('/dashboard/services');
+		// 🚀 Čistimo keš za usluge tako da desna kolona odmah prikaže novu uslugu na klik!
+		revalidatePath('/dashboard/services');
 	}
 
 	return (
-		<div className='w-full min-h-[calc(100vh-4rem)] bg-[#09090b] p-6 lg:p-12 font-sans text-white'>
+		/* 🚀 Zamenjeno min-h-[calc(100vh-4rem)] sa min-h-full da se uklopi u novi layout */
+		<div className='w-full min-h-full pt-12 bg-[#09090b] font-sans text-white'>
 			<div className='max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8'>
 				{/* LEVA STRANA: FORMA ZA DODAVANJE */}
 				<div className='border border-zinc-900 bg-[#0c0c0e] p-6 h-fit'>
@@ -59,7 +60,7 @@ export default async function ServicesPage() {
 							{'[ node: service_registry ]'}
 						</span>
 						<h2 className='text-xl font-bold uppercase tracking-tight'>
-							Dodaj Novu Uslugu
+							Add New Service
 						</h2>
 					</div>
 
@@ -68,12 +69,12 @@ export default async function ServicesPage() {
 						className='space-y-4'>
 						<div className='space-y-2'>
 							<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-								Naziv Usluge
+								Service Name
 							</label>
 							<Input
 								name='name'
 								required
-								placeholder='npr. Muško Šišanje'
+								placeholder='e.g. Haircut'
 								className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-sm'
 							/>
 						</div>
@@ -81,19 +82,19 @@ export default async function ServicesPage() {
 						<div className='grid grid-cols-2 gap-4'>
 							<div className='space-y-2'>
 								<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-									Cena ($ ili RSD)
+									Price (EUR)
 								</label>
 								<Input
 									name='price'
 									type='number'
 									required
-									placeholder='1500'
+									placeholder='20'
 									className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-sm'
 								/>
 							</div>
 							<div className='space-y-2'>
 								<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-									Trajanje (min)
+									Duration (min)
 								</label>
 								<Input
 									name='duration'
@@ -120,7 +121,7 @@ export default async function ServicesPage() {
 							{`[ active_services // count: ${business.services?.length || 0} ]`}
 						</span>
 						<h2 className='text-xl font-bold uppercase tracking-tight'>
-							Meniji i Katalozi Usluga
+							Service Menus & Catalogs
 						</h2>
 					</div>
 
@@ -139,12 +140,12 @@ export default async function ServicesPage() {
 											{service.name}
 										</h3>
 										<p className='text-xs text-zinc-500 font-mono mt-1'>
-											Trajanje: {service.duration} min
+											Duration: {service.duration} min
 										</p>
 									</div>
 									<div className='flex justify-between items-center border-t border-zinc-900 pt-3 mt-4'>
 										<span className='text-emerald-400 font-mono text-sm font-bold'>
-											{service.price}.00 RSD
+											{service.price}.00 EUR
 										</span>
 										<span className='font-mono text-[9px] text-zinc-600 uppercase'>
 											{'[ active ]'}

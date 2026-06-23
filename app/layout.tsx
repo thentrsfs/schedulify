@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 
 import { ClerkProvider } from '@clerk/nextjs';
 import { dark } from '@clerk/ui/themes';
-import Navbar from '@/components/Navbar';
 
 // Inter za regularan tekst
 const inter = Inter({
@@ -41,9 +40,10 @@ export default function RootLayout({
 					inter.variable,
 					spaceGrotesk.variable,
 				)}>
-				<body className='min-h-full flex flex-col bg-[#09090b] text-zinc-50 font-sans antialiased'>
-					<Navbar />
-					{children}
+				<body className='h-full flex flex-col bg-[#09090b] text-zinc-50 font-sans antialiased'>
+					<div className='flex-1 min-h-0 w-full overflow-y-auto'>
+						{children}
+					</div>
 				</body>
 			</html>
 		</ClerkProvider>

@@ -8,12 +8,12 @@ export default function DashboardLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<div className='flex min-h-screen bg-[#09090b] text-white font-sans selection:bg-emerald-500 selection:text-zinc-950'>
+		<div className='flex min-h-0 h-full bg-[#09090b] text-white font-sans selection:bg-emerald-500 selection:text-zinc-950'>
 			{/* SIDEBAR NAVIGACIJA */}
-			<aside className='w-64 border-r border-zinc-900 bg-[#0c0c0e] flex flex-col justify-between p-6 shrink-0 h-screen sticky top-0'>
+			<aside className='w-64 border-r border-zinc-900 bg-[#0c0c0e] flex flex-col justify-between p-6 shrink-0 h-full sticky top-0'>
 				<div className='space-y-8'>
 					{/* LOGO SEKCIJA */}
-					<div className='border-b border-zinc-900 pb-6'>
+					<div className='border-b border-zinc-900 pb-6 px-3'>
 						<span className='font-mono text-xs uppercase tracking-widest text-zinc-500 block'>
 							{'[ system_core ]'}
 						</span>
@@ -69,7 +69,9 @@ export default function DashboardLayout({
 			</aside>
 
 			{/* GLAVNI SADRŽAJ STRANICE */}
-			<main className='flex-1 overflow-y-auto h-screen'>{children}</main>
+			<main className='flex-1 overflow-y-auto min-h-0 h-full w-full'>
+				{children}
+			</main>
 		</div>
 	);
 }

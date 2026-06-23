@@ -28,9 +28,16 @@ export default async function AppointmentsPage() {
 
 	if (!business) redirect('/dashboard/onboarding');
 
+<<<<<<< HEAD
 	const allUsers = await db.user.findMany();
 
 	// 🚀 ACTION: CREATE APPOINTMENT
+=======
+	// Fetch all registered users for testing customer dropdown selection
+	const allUsers = await db.user.findMany();
+
+	// SERVER ACTION FOR BOOKING CREATION
+>>>>>>> master
 	async function createAppointment(formData: FormData) {
 		'use server';
 
@@ -44,13 +51,24 @@ export default async function AppointmentsPage() {
 		if (!customerId || !serviceId || !employeeId || !dateStr || !timeStr)
 			return;
 
+<<<<<<< HEAD
 		const startTime = new Date(`${dateStr}T${timeStr}:00`);
 
+=======
+		// Construct exact ISO startTime object
+		const startTime = new Date(`${dateStr}T${timeStr}:00`);
+
+		// Fetch selected service to read its duration
+>>>>>>> master
 		const selectedService = await db.service.findUnique({
 			where: { id: serviceId },
 		});
 		if (!selectedService) return;
 
+<<<<<<< HEAD
+=======
+		// Calculate endTime by adding duration minutes to startTime
+>>>>>>> master
 		const endTime = new Date(
 			startTime.getTime() + selectedService.duration * 60000,
 		);
@@ -63,6 +81,10 @@ export default async function AppointmentsPage() {
 		});
 		if (!currentBusiness) return;
 
+<<<<<<< HEAD
+=======
+		// Write Appointment directly into the database
+>>>>>>> master
 		await db.appointment.create({
 			data: {
 				businessId: currentBusiness.id,
@@ -76,6 +98,7 @@ export default async function AppointmentsPage() {
 			},
 		});
 
+<<<<<<< HEAD
 		revalidatePath('/dashboard/appointments');
 	}
 
@@ -104,11 +127,18 @@ export default async function AppointmentsPage() {
 			data: { status: 'CANCELLED' },
 		});
 
+=======
+		// 🚀 Clear cache for appointments route so the matrix updates instantly
+>>>>>>> master
 		revalidatePath('/dashboard/appointments');
 	}
 
 	return (
+<<<<<<< HEAD
 		/* ⚡ Tvoj pt-12 i min-h-full ostaju fiksirani */
+=======
+		/* ⚡ Tvoj pt-12 i min-h-full ostaju netaknuti, idealno za tvoj ukus */
+>>>>>>> master
 		<div className='w-full min-h-full pt-12 bg-[#09090b] font-sans text-white'>
 			<div className='max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8'>
 				{/* LEFT COLUMN: SCHEDULER FORM */}
@@ -218,7 +248,11 @@ export default async function AppointmentsPage() {
 							</label>
 							<Input
 								name='notes'
+<<<<<<< HEAD
 								placeholder='Special requirements...'
+=======
+								placeholder='Special requirements or requests...'
+>>>>>>> master
 								className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-xs h-11 focus:border-emerald-500'
 							/>
 						</div>
@@ -249,12 +283,17 @@ export default async function AppointmentsPage() {
 					) : (
 						<div className='space-y-4'>
 							{business.appointments?.map((app) => {
+<<<<<<< HEAD
+=======
+								// Bezbedno izvlačenje ISO stringova za stabilan klijentski prikaz bez Hydration grešaka
+>>>>>>> master
 								const timeStartRaw = app.startTime
 									.toISOString()
 									.substring(11, 16);
 								const timeEndRaw = app.endTime.toISOString().substring(11, 16);
 								const dateRaw = app.startTime.toISOString().substring(0, 10);
 
+<<<<<<< HEAD
 								// Dinamička boja za statuse
 								const statusColors: Record<string, string> = {
 									PENDING: 'text-amber-400 border-amber-500/30 bg-amber-500/5',
@@ -263,6 +302,8 @@ export default async function AppointmentsPage() {
 									CANCELLED: 'text-rose-500 border-rose-500/30 bg-rose-500/5',
 								};
 
+=======
+>>>>>>> master
 								return (
 									<div
 										key={app.id}
@@ -300,6 +341,7 @@ export default async function AppointmentsPage() {
 											)}
 										</div>
 
+<<<<<<< HEAD
 										{/* KONTROLE I STATUŠI */}
 										<div className='flex flex-row md:flex-col items-end justify-between md:justify-center gap-3 border-t md:border-t-0 border-zinc-900 pt-3 md:pt-0 shrink-0 min-w-35'>
 											<div className='text-right md:w-full'>
@@ -341,6 +383,15 @@ export default async function AppointmentsPage() {
 													</form>
 												</div>
 											)}
+=======
+										<div className='flex items-center justify-between md:justify-end gap-4 border-t md:border-t-0 border-zinc-900 pt-3 md:pt-0 shrink-0'>
+											<span className='text-emerald-400 text-sm font-bold'>
+												{app.service.price}.00 RSD
+											</span>
+											<span className='text-[10px] px-2 py-1 bg-zinc-900 border border-zinc-800 text-emerald-400 uppercase tracking-wider font-bold'>
+												{app.status}
+											</span>
+>>>>>>> master
 										</div>
 									</div>
 								);
