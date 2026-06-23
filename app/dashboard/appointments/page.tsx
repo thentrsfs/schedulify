@@ -1,14 +1,15 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export default async function AppointmentsPage() {
 	const user = await currentUser();
-	if (!user) redirect('/sign-in');
+	if (!user) redirect('/login');
 
-	// Vučemo biznis, njegove usluge, zaposlene, i sve dosadašnje termine
+	// Fetch business, services, employees, and all related appointments
 	const business = await db.business.findFirst({
 		where: { ownerId: user.id },
 		include: {
@@ -27,44 +28,41 @@ export default async function AppointmentsPage() {
 
 	if (!business) redirect('/dashboard/onboarding');
 
-	// Vučemo sve registrovane korisnike u sistemu da bismo mogli da izaberemo klijenta za test
 	const allUsers = await db.user.findMany();
 
-	// SERVER ACTION ZA KREIRANJE TERMINA
+	// 🚀 ACTION: CREATE APPOINTMENT
 	async function createAppointment(formData: FormData) {
 		'use server';
 
 		const customerId = formData.get('customerId') as string;
 		const serviceId = formData.get('serviceId') as string;
 		const employeeId = formData.get('employeeId') as string;
-		const dateStr = formData.get('date') as string; // YYYY-MM-DD
-		const timeStr = formData.get('time') as string; // HH:MM
+		const dateStr = formData.get('date') as string;
+		const timeStr = formData.get('time') as string;
 		const notes = formData.get('notes') as string;
 
 		if (!customerId || !serviceId || !employeeId || !dateStr || !timeStr)
 			return;
 
-		// Konstruišemo tačan startTime objekat
 		const startTime = new Date(`${dateStr}T${timeStr}:00`);
 
-		// Vučemo podatke o usluzi da bismo videli koliko traje (duration)
 		const selectedService = await db.service.findUnique({
 			where: { id: serviceId },
 		});
 		if (!selectedService) return;
 
-		// Računamo endTime na osnovu trajanja usluge (dodajemo minute na startTime)
 		const endTime = new Date(
 			startTime.getTime() + selectedService.duration * 60000,
 		);
 
 		const authUser = await currentUser();
+		if (!authUser) return;
+
 		const currentBusiness = await db.business.findFirst({
-			where: { ownerId: authUser?.id },
+			where: { ownerId: authUser.id },
 		});
 		if (!currentBusiness) return;
 
-		// Upisujemo Appointment direktno u bazu
 		await db.appointment.create({
 			data: {
 				businessId: currentBusiness.id,
@@ -74,40 +72,69 @@ export default async function AppointmentsPage() {
 				startTime,
 				endTime,
 				notes: notes || null,
-				status: 'PENDING', // Po defaultu iz tvoje sheme
+				status: 'PENDING',
 			},
 		});
 
-		redirect('/dashboard/appointments');
+		revalidatePath('/dashboard/appointments');
+	}
+
+	// 🚀 NEW ACTION: APPROVE APPOINTMENT
+	async function approveAppointment(formData: FormData) {
+		'use server';
+		const appointmentId = formData.get('appointmentId') as string;
+		if (!appointmentId) return;
+
+		await db.appointment.update({
+			where: { id: appointmentId },
+			data: { status: 'CONFIRMED' },
+		});
+
+		revalidatePath('/dashboard/appointments');
+	}
+
+	// 🚀 NEW ACTION: CANCEL APPOINTMENT
+	async function cancelAppointment(formData: FormData) {
+		'use server';
+		const appointmentId = formData.get('appointmentId') as string;
+		if (!appointmentId) return;
+
+		await db.appointment.update({
+			where: { id: appointmentId },
+			data: { status: 'CANCELLED' },
+		});
+
+		revalidatePath('/dashboard/appointments');
 	}
 
 	return (
-		<div className='w-full min-h-[calc(100vh-4rem)] bg-[#09090b] p-6 lg:p-12 font-sans text-white'>
+		/* ⚡ Tvoj pt-12 i min-h-full ostaju fiksirani */
+		<div className='w-full min-h-full pt-12 bg-[#09090b] font-sans text-white'>
 			<div className='max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8'>
-				{/* FORMA ZA REZERVACIJU */}
+				{/* LEFT COLUMN: SCHEDULER FORM */}
 				<div className='border border-zinc-900 bg-[#0c0c0e] p-6 h-fit'>
 					<div className='space-y-1 mb-6 border-b border-zinc-900 pb-4'>
 						<span className='font-mono text-xs uppercase tracking-widest text-emerald-400'>
 							{'[ node: appointment_scheduler ]'}
 						</span>
 						<h2 className='text-xl font-bold uppercase tracking-tight'>
-							Zakaži Termin
+							Book Appointment
 						</h2>
 					</div>
 
 					<form
 						action={createAppointment}
 						className='space-y-4'>
-						{/* IZBOR KLIJENTA */}
+						{/* CUSTOMER SELECTION */}
 						<div className='space-y-2'>
 							<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-								Klijent
+								Customer
 							</label>
 							<select
 								name='customerId'
 								required
-								className='w-full bg-[#09090b] border border-zinc-800 text-white rounded-none font-mono text-xs h-11 px-3 focus:outline-none focus:border-emerald-500'>
-								<option value=''>Izaberi klijenta...</option>
+								className='w-full bg-[#09090b] border border-zinc-800 text-white rounded-none font-mono text-xs h-11 px-3 focus:outline-none focus:border-emerald-500 [&>option]:bg-[#0c0c0e] [&>option]:text-white'>
+								<option value=''>Select client...</option>
 								{allUsers.map((u) => (
 									<option
 										key={u.id}
@@ -118,16 +145,16 @@ export default async function AppointmentsPage() {
 							</select>
 						</div>
 
-						{/* IZBOR USLUGE */}
+						{/* SERVICE SELECTION */}
 						<div className='space-y-2'>
 							<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-								Usluga
+								Service
 							</label>
 							<select
 								name='serviceId'
 								required
-								className='w-full bg-[#09090b] border border-zinc-800 text-white rounded-none font-mono text-xs h-11 px-3 focus:outline-none focus:border-emerald-500'>
-								<option value=''>Izaberi uslugu...</option>
+								className='w-full bg-[#09090b] border border-zinc-800 text-white rounded-none font-mono text-xs h-11 px-3 focus:outline-none focus:border-emerald-500 [&>option]:bg-[#0c0c0e] [&>option]:text-white'>
+								<option value=''>Select service...</option>
 								{business.services.map((s) => (
 									<option
 										key={s.id}
@@ -138,61 +165,61 @@ export default async function AppointmentsPage() {
 							</select>
 						</div>
 
-						{/* IZBOR ZAPOSLENOG */}
+						{/* EMPLOYEE SELECTION */}
 						<div className='space-y-2'>
 							<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-								Zaposleni
+								Operator
 							</label>
 							<select
 								name='employeeId'
 								required
-								className='w-full bg-[#09090b] border border-zinc-800 text-white rounded-none font-mono text-xs h-11 px-3 focus:outline-none focus:border-emerald-500'>
-								<option value=''>Dodeli zaposlenog...</option>
+								className='w-full bg-[#09090b] border border-zinc-800 text-white rounded-none font-mono text-xs h-11 px-3 focus:outline-none focus:border-emerald-500 [&>option]:bg-[#0c0c0e] [&>option]:text-white'>
+								<option value=''>Assign employee...</option>
 								{business.employees.map((e) => (
 									<option
 										key={e.id}
 										value={e.id}>
-										{e.user?.name || 'Operativac'}
+										{e.user?.name || 'Field Agent'}
 									</option>
 								))}
 							</select>
 						</div>
 
-						{/* DATUM I VREME */}
+						{/* DATE & TIME */}
 						<div className='grid grid-cols-2 gap-4'>
 							<div className='space-y-2'>
 								<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-									Datum
+									Date
 								</label>
 								<Input
 									type='date'
 									name='date'
 									required
-									className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-xs h-11'
+									className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-xs h-11 focus:border-emerald-500'
 								/>
 							</div>
 							<div className='space-y-2'>
 								<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-									Vreme
+									Time
 								</label>
 								<Input
 									type='time'
 									name='time'
 									required
-									className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-xs h-11'
+									className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-xs h-11 focus:border-emerald-500'
 								/>
 							</div>
 						</div>
 
-						{/* NAPOMENA */}
+						{/* NOTES */}
 						<div className='space-y-2'>
 							<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-								Napomena (Opciono)
+								Notes (Optional)
 							</label>
 							<Input
 								name='notes'
-								placeholder='Dodatni zahtevi klijenta...'
-								className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-xs h-11'
+								placeholder='Special requirements...'
+								className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-xs h-11 focus:border-emerald-500'
 							/>
 						</div>
 
@@ -204,14 +231,14 @@ export default async function AppointmentsPage() {
 					</form>
 				</div>
 
-				{/* PREGLED ZAKAZANIH TERMINA */}
+				{/* RIGHT COLUMN: ACTIVE MATRIX OVERVIEW */}
 				<div className='lg:col-span-2 border border-zinc-900 bg-[#0c0c0e] p-6'>
 					<div className='space-y-1 mb-6 border-b border-zinc-900 pb-4'>
 						<span className='font-mono text-xs uppercase tracking-widest text-zinc-500'>
 							{`[ scheduled_appointments // count: ${business.appointments?.length || 0} ]`}
 						</span>
 						<h2 className='text-xl font-bold uppercase tracking-tight'>
-							Aktivni Termini
+							Active Schedule Matrix
 						</h2>
 					</div>
 
@@ -221,61 +248,103 @@ export default async function AppointmentsPage() {
 						</div>
 					) : (
 						<div className='space-y-4'>
-							{business.appointments?.map((app) => (
-								<div
-									key={app.id}
-									className='border border-zinc-900 bg-[#09090b] p-4 flex flex-col md:flex-row md:items-center justify-between gap-4'>
-									<div className='space-y-1'>
-										<div className='flex items-center gap-2'>
-											<span className='text-emerald-400 font-bold text-sm font-mono'>
-												{new Date(app.startTime).toLocaleTimeString('sr-RS', {
-													hour: '2-digit',
-													minute: '2-digit',
-												})}
-											</span>
-											<span className='text-zinc-600 font-mono text-[10px]'>
-												-{' '}
-												{new Date(app.endTime).toLocaleTimeString('sr-RS', {
-													hour: '2-digit',
-													minute: '2-digit',
-												})}
-											</span>
-											<span className='text-zinc-500 font-mono text-xs ml-2'>
-												[{new Date(app.startTime).toLocaleDateString('sr-RS')}]
-											</span>
-										</div>
-										<h3 className='font-medium text-white text-base'>
-											{app.service.name}
-										</h3>
-										<p className='text-xs text-zinc-400'>
-											Klijent:{' '}
-											<span className='text-zinc-200 font-medium'>
-												{app.customer.name || app.customer.email}
-											</span>
-										</p>
-										<p className='text-[11px] text-zinc-500'>
-											Izvršilac:{' '}
-											<span className='text-zinc-400 font-mono'>
-												{app.employee.user?.name}
-											</span>
-										</p>
-										{app.notes && (
-											<p className='text-[11px] text-amber-500/80 italic font-mono mt-1'>
-												* Note: {app.notes}
-											</p>
-										)}
-									</div>
+							{business.appointments?.map((app) => {
+								const timeStartRaw = app.startTime
+									.toISOString()
+									.substring(11, 16);
+								const timeEndRaw = app.endTime.toISOString().substring(11, 16);
+								const dateRaw = app.startTime.toISOString().substring(0, 10);
 
-									<div className='flex items-center justify-between md:justify-end gap-4 border-t md:border-t-0 border-zinc-900 pt-3 md:pt-0'>
-										<span className='text-emerald-400 font-mono text-xs font-bold'>
-											{app.service.price}.00 RSD
-										</span>
-										<span className='font-mono text-[10px] px-2 py-1 bg-zinc-900 border border-zinc-800 text-emerald-400 uppercase tracking-wider'>
-											{app.status}
-										</span>
+								// Dinamička boja za statuse
+								const statusColors: Record<string, string> = {
+									PENDING: 'text-amber-400 border-amber-500/30 bg-amber-500/5',
+									CONFIRMED:
+										'text-emerald-400 border-emerald-500/30 bg-emerald-500/5',
+									CANCELLED: 'text-rose-500 border-rose-500/30 bg-rose-500/5',
+								};
+
+								return (
+									<div
+										key={app.id}
+										className='border border-zinc-900 bg-[#09090b] p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 font-mono'>
+										<div className='space-y-1 min-w-0 flex-1'>
+											<div className='flex items-center flex-wrap gap-2 text-xs'>
+												<span className='text-emerald-400 font-bold'>
+													{timeStartRaw}
+												</span>
+												<span className='text-zinc-600'>-</span>
+												<span className='text-zinc-500'>{timeEndRaw}</span>
+												<span className='text-zinc-400 ml-1 text-[11px]'>
+													[{dateRaw}]
+												</span>
+											</div>
+											<h3 className='font-medium text-white text-base truncate font-sans'>
+												{app.service.name}
+											</h3>
+											<p className='text-xs text-zinc-400 truncate'>
+												Client:{' '}
+												<span className='text-zinc-200 font-medium font-sans'>
+													{app.customer.name || app.customer.email}
+												</span>
+											</p>
+											<p className='text-[11px] text-zinc-500 truncate'>
+												Assigned Operator:{' '}
+												<span className='text-zinc-400 font-sans'>
+													{app.employee.user?.name || 'Field Agent'}
+												</span>
+											</p>
+											{app.notes && (
+												<p className='text-[11px] text-amber-500/80 italic mt-1 wrap-break-words max-w-xl'>
+													* Mission Specs: {app.notes}
+												</p>
+											)}
+										</div>
+
+										{/* KONTROLE I STATUŠI */}
+										<div className='flex flex-row md:flex-col items-end justify-between md:justify-center gap-3 border-t md:border-t-0 border-zinc-900 pt-3 md:pt-0 shrink-0 min-w-35'>
+											<div className='text-right md:w-full'>
+												<span className='text-emerald-400 text-sm font-bold block'>
+													{app.service.price}.00 RSD
+												</span>
+												<span
+													className={`inline-block text-[10px] px-2 py-0.5 border uppercase tracking-wider font-bold mt-1 ${statusColors[app.status] || 'text-zinc-400'}`}>
+													{app.status}
+												</span>
+											</div>
+
+											{/* Inline mini-forme za promenu stanja sačuvanih objekata */}
+											{app.status === 'PENDING' && (
+												<div className='flex gap-1.5'>
+													<form action={approveAppointment}>
+														<input
+															type='hidden'
+															name='appointmentId'
+															value={app.id}
+														/>
+														<button
+															type='submit'
+															className='text-[10px] bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold uppercase tracking-tight px-2 py-1 rounded-none transitions-all'>
+															Approve
+														</button>
+													</form>
+													<form action={cancelAppointment}>
+														<input
+															type='hidden'
+															name='appointmentId'
+															value={app.id}
+														/>
+														<button
+															type='submit'
+															className='text-[10px] bg-zinc-900 hover:bg-rose-950 border border-zinc-800 hover:border-rose-900 text-zinc-400 hover:text-rose-400 uppercase tracking-tight px-2 py-1 rounded-none transitions-all'>
+															Cancel
+														</button>
+													</form>
+												</div>
+											)}
+										</div>
 									</div>
-								</div>
-							))}
+								);
+							})}
 						</div>
 					)}
 				</div>
