@@ -1,6 +1,6 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache'; // 🚀 Dodato za instant osvežavanje UI-ja
+import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,9 +26,20 @@ export default async function StaffPage() {
 	async function addStaff(formData: FormData) {
 		'use server';
 
-		const employeeUserId = formData.get('userId') as string;
+		const email = formData.get('email') as string;
 
-		if (!employeeUserId) return;
+		if (!email) return;
+
+		// 🚀 PRETRAGA KORISNIKA PREKO EMAIL-A
+		const userToHire = await db.user.findFirst({
+			where: { email: email.toLowerCase().trim() },
+		});
+
+		// Ako korisnik ne postoji u tvojoj User tabeli, prekidamo akciju
+		if (!userToHire) {
+			console.log('Korisnik sa ovim emailom ne postoji u bazi.');
+			return;
+		}
 
 		const authUser = await currentUser();
 		if (!authUser) return;
@@ -39,10 +50,20 @@ export default async function StaffPage() {
 
 		if (!currentBusiness) return;
 
-		// 2. Upisujemo radnika u tabelu Employee
+		// Provera da li je korisnik već zaposlen u ovom biznisu
+		const alreadyEmployee = await db.employee.findFirst({
+			where: {
+				businessId: currentBusiness.id,
+				userId: userToHire.id,
+			},
+		});
+
+		if (alreadyEmployee) return;
+
+		// 2. Upisujemo radnika u tabelu Employee koristeći pronađeni ID
 		await db.employee.create({
 			data: {
-				userId: employeeUserId,
+				userId: userToHire.id, // <--- Baza dobija svoj obavezni ID ovde
 				businessId: currentBusiness.id,
 			},
 		});
@@ -52,10 +73,9 @@ export default async function StaffPage() {
 	}
 
 	return (
-		/* 🚀 Promenjeno u min-h-full radi savršenog uklapanja u dashboard layout bez duplih skrolbarova */
 		<div className='w-full min-h-full pt-12 bg-[#09090b] font-sans text-white'>
-			<div className='max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8'>
-				{/* FORMA ZA REGISTRACIJU RADNIKA */}
+			<div className='max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 px-4'>
+				{/* FORMA ZA REGISTRACIJU RADNIKA PREKO EMAIL-A */}
 				<div className='border border-zinc-900 bg-[#0c0c0e] p-6 h-fit'>
 					<div className='space-y-1 mb-6 border-b border-zinc-900 pb-4'>
 						<span className='font-mono text-xs uppercase tracking-widest text-emerald-400'>
@@ -71,16 +91,17 @@ export default async function StaffPage() {
 						className='space-y-4'>
 						<div className='space-y-2'>
 							<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-								User ID of the Employee
+								Employee Email Address
 							</label>
 							<Input
-								name='userId'
+								type='email'
+								name='email'
 								required
-								placeholder='Enter user system ID (e.g., user_...)'
-								className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-xs h-11'
+								placeholder='agent@domain.com'
+								className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-xs h-11 focus:border-emerald-500'
 							/>
 							<span className='text-[10px] text-zinc-600 font-mono block mt-1'>
-								* Right now we can only add employees by their existing ID.
+								* Korisnik mora imati otvoren nalog u sistemu da bi bio dodat.
 							</span>
 						</div>
 
