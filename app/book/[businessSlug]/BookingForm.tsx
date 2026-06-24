@@ -31,6 +31,8 @@ export default function BookingForm({ business }: BookingFormProps) {
 		initialState,
 	);
 
+	const todayStr = new Date().toISOString().split('T')[0];
+
 	useEffect(() => {
 		if (state?.success && state?.redirectUrl) {
 			router.push(state.redirectUrl);
@@ -142,6 +144,7 @@ export default function BookingForm({ business }: BookingFormProps) {
 						type='date'
 						name='date'
 						required
+						min={todayStr}
 						defaultValue={state?.inputs?.date || ''}
 						className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-xs h-11'
 					/>
