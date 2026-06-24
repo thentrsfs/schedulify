@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { notFound } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -90,9 +91,8 @@ export default async function PublicBookingPage({ params }: BookPageProps) {
 		// Čistimo keš za admin rute kako bi odmah videli novi zahtev
 		revalidatePath('/dashboard/appointments');
 
-		// Ovde bismo u realnosti radili redirect na /book/[businessSlug]/success,
-		// ali za sada samo osvežavamo formu radi provere
-		revalidatePath(`/book/${businessSlug}`);
+		// Preusmjeravamo korisnika na success stranicu
+		redirect(`/book/${businessSlug}/success`);
 	}
 
 	return (
