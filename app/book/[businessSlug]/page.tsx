@@ -30,17 +30,14 @@ export default async function PublicBookingPage({ params }: BookPageProps) {
 		notFound();
 	}
 
-	// Sačuvaj ID u lokalnu konstantu da bi server action imao siguran, non-null vrednost
-	const businessId = business.id;
-
 	// SERVER ACTION ZA KLIJENTSKO ZAKAZIVANJE
 	async function handleClientBooking(formData: FormData) {
 		'use server';
 
 		const serviceId = formData.get('serviceId') as string;
 		const employeeId = formData.get('employeeId') as string;
-		const dateStr = formData.get('date') as string; // YYYY-MM-DD
-		const timeStr = formData.get('time') as string; // HH:MM
+		const dateStr = formData.get('date') as string;
+		const timeStr = formData.get('time') as string;
 		const clientEmail = formData.get('email') as string;
 		const clientName = formData.get('name') as string;
 		const notes = formData.get('notes') as string;
@@ -48,21 +45,7 @@ export default async function PublicBookingPage({ params }: BookPageProps) {
 		if (!serviceId || !employeeId || !dateStr || !timeStr || !clientEmail)
 			return;
 
-		// Tražimo da li klijent sa tim emailom već postoji u bazi
-		let customer = await db.user.findFirst({
-			where: { email: clientEmail },
-		});
-
-		// Ako ne postoji, kreiramo novog bazičnog korisnika da bismo imali validan customerId
-		if (!customer) {
-			customer = await db.user.create({
-				data: {
-					email: clientEmail,
-					name: clientName || 'Anonymous Client',
-				},
-			});
-		}
-
+		// 1. Izračunavanje vremena
 		const startTime = new Date(`${dateStr}T${timeStr}:00`);
 
 		const selectedService = await db.service.findUnique({
@@ -74,24 +57,70 @@ export default async function PublicBookingPage({ params }: BookPageProps) {
 			startTime.getTime() + selectedService.duration * 60000,
 		);
 
-		// Upisujemo termin direktno u bazu povezanu sa ovim biznisom
+		// 🚀 2. VALIDACIJA: PROVERA PREKLAPANJA TERMINA (Conflict Detection)
+		// Tražimo bilo koji termin koji se preklapa za ovog radnika
+		const conflictingAppointment = await db.appointment.findFirst({
+			where: {
+				employeeId: employeeId,
+				status: { not: 'CANCELLED' }, // Otkazani termini nam ne smetaju
+				OR: [
+					{
+						// Slučaj 1: Novi termin počinje tokom trajanja već zakazanog
+						startTime: { lte: startTime },
+						endTime: { gt: startTime },
+					},
+					{
+						// Slučaj 2: Novi termin se završava nakon što je već zakazani počeo
+						startTime: { lt: endTime },
+						endTime: { gte: endTime },
+					},
+					{
+						// Slučaj 3: Novi termin u potpunosti obuhvata već postojeći kraći termin
+						startTime: { gte: startTime },
+						endTime: { lte: endTime },
+					},
+				],
+			},
+		});
+
+		// Ako postoji preklapanje, prekidamo izvršavanje
+		if (conflictingAppointment) {
+			// Kasnije možemo dodati lepši error state na UI-ju, za sada samo blokiramo upis
+			console.log(
+				'CRITICAL: Operator is deployed on another mission at this time.',
+			);
+			return;
+		}
+
+		// 3. Traženje ili kreiranje klijenta
+		let customer = await db.user.findFirst({
+			where: { email: clientEmail },
+		});
+
+		if (!customer) {
+			customer = await db.user.create({
+				data: {
+					email: clientEmail,
+					name: clientName || 'Anonymous Client',
+				},
+			});
+		}
+
+		// 4. Upisujemo termin tek kada smo 100% sigurni da je slot slobodan
 		await db.appointment.create({
 			data: {
-				businessId, // sigurni non-null ID snimljen iznad
+				businessId: business!.id,
 				customerId: customer.id,
 				employeeId,
 				serviceId,
 				startTime,
 				endTime,
 				notes: notes || null,
-				status: 'PENDING', // Čeka odobrenje admina na dashboardu
+				status: 'PENDING',
 			},
 		});
 
-		// Čistimo keš za admin rute kako bi odmah videli novi zahtev
 		revalidatePath('/dashboard/appointments');
-
-		// Preusmjeravamo korisnika na success stranicu
 		redirect(`/book/${businessSlug}/success`);
 	}
 
