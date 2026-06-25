@@ -99,13 +99,15 @@ export default async function PublicBookingPage({
 								required
 								className='w-full bg-[#09090b] border border-zinc-800 text-white rounded-none font-mono text-xs h-11 px-3 focus:outline-none focus:border-emerald-500'>
 								<option value=''>-- Available Operators --</option>
-								{business.employees.map((e) => (
-									<option
-										key={e.id}
-										value={e.id}>
-										{e.user?.name || 'Zaposleni'}
-									</option>
-								))}
+								{business.employees.map(
+									(e: (typeof business.employees)[number]) => (
+										<option
+											key={e.id}
+											value={e.id}>
+											{e.user?.name || 'Zaposleni'}
+										</option>
+									),
+								)}
 							</select>
 						</div>
 					</div>
