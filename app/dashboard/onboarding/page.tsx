@@ -78,7 +78,7 @@ export default async function OnboardingPage() {
 							name='name'
 							type='text'
 							required
-							placeholder='npr. Cyber Cut Barber'
+							placeholder='e.g. Cyber Cut Barber'
 							className='bg-[#09090b] border-zinc-800 text-white rounded-none focus-visible:ring-emerald-500 font-mono text-sm h-11 placeholder:text-zinc-700'
 						/>
 					</div>
@@ -91,7 +91,7 @@ export default async function OnboardingPage() {
 							name='address'
 							type='text'
 							required
-							placeholder='npr. Nemanjina 12, Beograd'
+							placeholder='e.g. 123 Main St, New York, NY 10001'
 							className='bg-[#09090b] border-zinc-800 text-white rounded-none focus-visible:ring-emerald-500 font-mono text-sm h-11 placeholder:text-zinc-700'
 						/>
 					</div>
