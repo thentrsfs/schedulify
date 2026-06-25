@@ -2,7 +2,6 @@ import { db } from '@/lib/db';
 import { notFound, redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Service } from '@prisma/client';
 
 interface PublicBookingProps {
 	params: Promise<{
@@ -79,13 +78,15 @@ export default async function PublicBookingPage({
 								required
 								className='w-full bg-[#09090b] border border-zinc-800 text-white rounded-none font-mono text-xs h-11 px-3 focus:outline-none focus:border-emerald-500'>
 								<option value=''>-- Services --</option>
-								{business.services.map((s: Service) => (
-									<option
-										key={s.id}
-										value={s.id}>
-										{s.name} ({s.price} RSD)
-									</option>
-								))}
+								{business.services.map(
+									(s: (typeof business.services)[number]) => (
+										<option
+											key={s.id}
+											value={s.id}>
+											{s.name} ({s.price} RSD)
+										</option>
+									),
+								)}
 							</select>
 						</div>
 
