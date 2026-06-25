@@ -1,9 +1,43 @@
 import { db } from '@/lib/db';
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import BookingForm from '@/app/book/[businessSlug]/BookingForm';
 
 interface BookPageProps {
 	params: Promise<{ businessSlug: string }>;
+}
+
+export async function generateMetadata({
+	params,
+}: BookPageProps): Promise<Metadata> {
+	const { businessSlug } = await params;
+
+	// Vučemo salon iz baze na osnovu sluga iz URL-a
+	const business = await db.business.findUnique({
+		where: { slug: businessSlug },
+	});
+
+	// Ako salon ne postoji u bazi
+	if (!business) {
+		return {
+			title: {
+				absolute: 'Salon nije pronađen // Schedulify',
+			},
+		};
+	}
+
+	// Ako postoji, "zaključavamo" tačno ime salona u tabu browsera
+	return {
+		title: {
+			absolute: `${business.name} | Zakaži Termin`,
+		},
+		description: `Online zakazivanje termina za salon ${business.name} putem Schedulify platforme.`,
+		openGraph: {
+			title: `${business.name} | Zakaži Termin`,
+			description: `Online zakazivanje termina za salon ${business.name}.`,
+			type: 'website',
+		},
+	};
 }
 
 export default async function PublicBookingPage({ params }: BookPageProps) {
