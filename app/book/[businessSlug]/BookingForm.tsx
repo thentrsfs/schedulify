@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import { handleClientBooking, type BookingState } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Prisma } from '@prisma/client';
+import { Business, Service, Employee, User } from '@prisma/client';
 
-type BusinessWithRelations = Prisma.BusinessGetPayload<{
-	include: {
-		services: true;
-		employees: { include: { user: true } };
-	};
-}>;
+type BusinessWithRelations = Business & {
+	services: Service[];
+	employees: (Employee & {
+		user: User | null; // Pošto u šemi user može biti opcionalan
+	})[];
+};
 
 interface BookingFormProps {
 	business: BusinessWithRelations;
