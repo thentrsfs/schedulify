@@ -87,7 +87,7 @@ export default async function AppointmentsPage() {
 
 	return (
 		/* ⚡ Tvoj pt-12 i min-h-full ostaju netaknuti, idealno za tvoj ukus */
-		<div className='w-full min-h-full pt-12 bg-[#09090b] font-sans text-white'>
+		<div className='w-full min-h-full lg:pt-8 bg-[#09090b] font-sans text-white'>
 			<div className='max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8'>
 				{/* LEFT COLUMN: SCHEDULER FORM */}
 				<div className='border border-zinc-900 bg-[#0c0c0e] p-6 h-fit'>

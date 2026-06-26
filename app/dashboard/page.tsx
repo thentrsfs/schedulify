@@ -47,7 +47,7 @@ export default async function DashboardPage() {
 	const hasNoBusiness = dbUser.ownedBusinesses.length === 0;
 
 	return (
-		<div className='w-full h-full bg-[#09090b] p-6 lg:p-12 font-sans'>
+		<div className='w-full h-full bg-[#09090b] lg:py-8 font-sans'>
 			<div className='max-w-7xl mx-auto'>
 				{/* DASHBOARD HEADER */}
 				<div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-900 pb-8 mb-8'>
@@ -94,7 +94,7 @@ export default async function DashboardPage() {
 					</div>
 				) : (
 					/* CONDITION: CORE SYSTEMS LIVE */
-					<div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+					<div className='grid grid-cols-1 md:grid-cols-3 gap-6 pb-6'>
 						{/* Identity Card */}
 						<div className='bg-[#0c0c0e] border border-zinc-900 p-6 rounded-none flex flex-col justify-between'>
 							<div>

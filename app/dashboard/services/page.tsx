@@ -51,7 +51,7 @@ export default async function ServicesPage() {
 
 	return (
 		/* 🚀 Zamenjeno min-h-[calc(100vh-4rem)] sa min-h-full da se uklopi u novi layout */
-		<div className='w-full min-h-full pt-12 bg-[#09090b] font-sans text-white'>
+		<div className='w-full min-h-full lg:py-8 bg-[#09090b] font-sans text-white'>
 			<div className='max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8'>
 				{/* LEVA STRANA: FORMA ZA DODAVANJE */}
 				<div className='border border-zinc-900 bg-[#0c0c0e] p-6 h-fit'>

@@ -73,8 +73,8 @@ export default async function StaffPage() {
 	}
 
 	return (
-		<div className='w-full min-h-full pt-12 bg-[#09090b] font-sans text-white'>
-			<div className='max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 px-4'>
+		<div className='w-full min-h-full lg:py-8 bg-[#09090b] font-sans text-white'>
+			<div className='max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 '>
 				{/* FORMA ZA REGISTRACIJU RADNIKA PREKO EMAIL-A */}
 				<div className='border border-zinc-900 bg-[#0c0c0e] p-6 h-fit'>
 					<div className='space-y-1 mb-6 border-b border-zinc-900 pb-4'>
