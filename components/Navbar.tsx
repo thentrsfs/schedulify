@@ -9,7 +9,7 @@ export default async function Navbar() {
 
 	return (
 		<header className='sticky top-0 z-50 w-full border-b border-zinc-900 bg-[#09090b]/80 backdrop-blur-md shrink-0'>
-			<div className='container flex h-16 items-center justify-between max-w-7xl mx-auto px-4'>
+			<div className='container flex h-16 items-center justify-between max-w-7xl mx-auto px-6'>
 				{/* LOGO */}
 				<div className='flex items-center gap-2'>
 					<Link

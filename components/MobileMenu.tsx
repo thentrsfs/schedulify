@@ -22,7 +22,7 @@ export function MobileMenu({ children }: { children: React.ReactNode }) {
 			open={open}
 			onOpenChange={setOpen}>
 			<SheetTrigger asChild>
-				<button className='p-2 border rounded-md md:hidden'>
+				<button className='p-2 border rounded-md lg:hidden'>
 					<Menu className='h-5 w-5' />
 				</button>
 			</SheetTrigger>
