@@ -28,7 +28,7 @@ export function MobileMenu({ children }: { children: React.ReactNode }) {
 			</SheetTrigger>
 			<SheetContent
 				side='left'
-				className='w-72 p-0'
+				className='w-72 p-0 bg-[#0c0c0e]'
 				onClick={handleContentClick}>
 				<div className='h-full w-full'>{children}</div>
 			</SheetContent>
