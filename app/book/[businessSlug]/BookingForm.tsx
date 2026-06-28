@@ -106,7 +106,7 @@ export default function BookingForm({ business }: BookingFormProps) {
 						<option
 							key={s.id}
 							value={s.id}>
-							{s.name} — {s.price}.00 KČ ({s.duration} min)
+							{s.name} — {s.price} KČ ({s.duration} min)
 						</option>
 					))}
 				</select>

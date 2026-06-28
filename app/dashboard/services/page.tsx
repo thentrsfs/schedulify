@@ -147,7 +147,7 @@ export default async function ServicesPage() {
 									</div>
 									<div className='flex justify-between items-center border-t border-zinc-900 pt-3 mt-4'>
 										<span className='text-emerald-400 font-mono text-sm font-bold'>
-											{service.price}.00 EUR
+											{service.price} KČ
 										</span>
 										<span className='font-mono text-[9px] text-zinc-600 uppercase'>
 											{'[ active ]'}
