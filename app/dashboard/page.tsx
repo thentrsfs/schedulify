@@ -11,6 +11,9 @@ export const dynamic = 'force-dynamic';
 export default async function DashboardPage() {
 	// 1. Read session on the server
 	const user = await currentUser();
+	const business = await db.business.findFirst({
+		where: { ownerId: user?.id },
+	});
 
 	if (!user) {
 		redirect('/sign-in');
@@ -59,15 +62,23 @@ export default async function DashboardPage() {
 							Command Center
 						</h1>
 					</div>
-
-					{/* Sign Out Trigger */}
-					<SignOutButton redirectUrl='/'>
-						<Button
-							variant='outline'
-							className='border-zinc-800 hover:bg-zinc-900 text-zinc-400 hover:text-white font-mono text-xs uppercase tracking-wider rounded-none h-10'>
-							Terminate Session
-						</Button>
-					</SignOutButton>
+					<div className='flex items-center gap-3'>
+						<Link href={`/book/${business?.slug}`}>
+							<Button
+								variant='outline'
+								className='border-zinc-800 hover:bg-zinc-900 text-zinc-400 hover:text-white font-mono text-xs uppercase tracking-wider rounded-none h-10'>
+								[ View Booking Page ]
+							</Button>
+						</Link>
+						{/* Sign Out Trigger */}
+						<SignOutButton redirectUrl='/'>
+							<Button
+								variant='outline'
+								className='border-zinc-800 hover:bg-zinc-900 text-zinc-400 hover:text-white font-mono text-xs uppercase tracking-wider rounded-none h-10'>
+								Terminate Session
+							</Button>
+						</SignOutButton>
+					</div>
 				</div>
 
 				{/* CONDITION: NO BUSINESS IN INFRASTRUCTURE */}
