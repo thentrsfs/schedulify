@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
+import NextTopLoader from 'nextjs-toploader';
 
 import { ClerkProvider } from '@clerk/nextjs';
 import { dark } from '@clerk/ui/themes';
@@ -42,6 +43,16 @@ export default function RootLayout({
 				)}>
 				<body className='h-full flex flex-col bg-[#09090b] text-zinc-50 font-sans antialiased'>
 					<div className='flex-1 min-h-0 w-full overflow-y-auto'>
+						<NextTopLoader
+							color='#10b981'
+							initialPosition={0.08}
+							crawlSpeed={200}
+							height={3}
+							crawl={true}
+							showSpinner={false}
+							easing='ease'
+							speed={200}
+						/>
 						{children}
 					</div>
 				</body>
