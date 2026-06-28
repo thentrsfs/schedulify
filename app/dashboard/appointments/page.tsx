@@ -273,7 +273,7 @@ export default async function AppointmentsPage() {
 
 										<div className='flex items-center justify-between md:justify-end gap-4 border-t md:border-t-0 border-zinc-900 pt-3 md:pt-0 shrink-0'>
 											<span className='text-emerald-400 text-sm font-bold'>
-												{app.service.price}.00 RSD
+												{app.service.price} KČ
 											</span>
 											<span className='text-[10px] px-2 py-1 bg-zinc-900 border border-zinc-800 text-emerald-400 uppercase tracking-wider font-bold'>
 												{app.status}
