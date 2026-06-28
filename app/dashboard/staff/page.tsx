@@ -101,7 +101,7 @@ export default async function StaffPage() {
 								className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-xs h-11 focus:border-emerald-500'
 							/>
 							<span className='text-[10px] text-zinc-600 font-mono block mt-1'>
-								* Korisnik mora imati otvoren nalog u sistemu da bi bio dodat.
+								* User must exist in your database.
 							</span>
 						</div>
 

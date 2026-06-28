@@ -82,13 +82,14 @@ export default async function ServicesPage() {
 						<div className='grid grid-cols-2 gap-4'>
 							<div className='space-y-2'>
 								<label className='font-mono text-[10px] uppercase tracking-widest text-zinc-400 block'>
-									Price (EUR)
+									Price (KČ)
 								</label>
 								<Input
 									name='price'
 									type='number'
 									required
-									placeholder='20'
+									min={0}
+									placeholder='200'
 									className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-sm'
 								/>
 							</div>
@@ -100,6 +101,7 @@ export default async function ServicesPage() {
 									name='duration'
 									type='number'
 									required
+									min={1}
 									placeholder='30'
 									className='bg-[#09090b] border-zinc-800 text-white rounded-none font-mono text-sm'
 								/>
