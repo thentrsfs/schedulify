@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export default function SignInPage() {
 	return (
-		<div className='relative w-full min-h-screen bg-[#09090b] flex items-center justify-center font-sans text-white p-4'>
+		<div className='relative w-full min-h-screen bg-[#09090b] flex items-center justify-center font-sans text-white p-6'>
 			{/* ⚡ CYBERPUNK BACK TO HOME BUTTON */}
 			<div className='absolute top-6 left-6 lg:top-8 lg:left-30'>
 				<Link
@@ -15,7 +15,7 @@ export default function SignInPage() {
 			</div>
 
 			{/* CLERK COMPONENT */}
-			<div className='border border-zinc-900 bg-[#0c0c0e] p-2 md:p-4 shadow-2xl'>
+			<div className='shadow-2xl'>
 				<SignIn
 					appearance={{
 						elements: {
