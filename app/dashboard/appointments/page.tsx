@@ -45,8 +45,10 @@ export default async function AppointmentsPage() {
 		if (!customerId || !serviceId || !employeeId || !dateStr || !timeStr)
 			return;
 
-		// Construct exact ISO startTime object
-		const startTime = new Date(`${dateStr}T${timeStr}:00`);
+		// 🌟 POPRAVKA VREMENA (Lokalno parsiranje)
+		const [year, month, day] = dateStr.split('-').map(Number);
+		const [hours, minutes] = timeStr.split(':').map(Number);
+		const startTime = new Date(year, month - 1, day, hours, minutes, 0);
 
 		// Fetch selected service to read its duration
 		const selectedService = await db.service.findUnique({
@@ -54,10 +56,26 @@ export default async function AppointmentsPage() {
 		});
 		if (!selectedService) return;
 
-		// Calculate endTime by adding duration minutes to startTime
+		// Calculate endTime
 		const endTime = new Date(
 			startTime.getTime() + selectedService.duration * 60000,
 		);
+
+		// 🌟 POPRAVKA PREKLAPANJA: Proveri bazu pre upisa
+		const hasConflict = await db.appointment.findFirst({
+			where: {
+				employeeId,
+				OR: [
+					{ startTime: { lte: startTime }, endTime: { gt: startTime } },
+					{ startTime: { lt: endTime }, endTime: { gte: endTime } },
+				],
+			},
+		});
+
+		if (hasConflict) {
+			// Možeš dodati i neki state za error, ali za demo je dovoljno da blokira dupli unos
+			return;
+		}
 
 		const authUser = await currentUser();
 		if (!authUser) return;
@@ -82,6 +100,22 @@ export default async function AppointmentsPage() {
 		});
 
 		// 🚀 Clear cache for appointments route so the matrix updates instantly
+		revalidatePath('/dashboard/appointments');
+	}
+
+	// 🌟 SERVER ACTION FOR APPOINTMENT DELETION
+	async function deleteAppointment(formData: FormData) {
+		'use server';
+
+		const appointmentId = formData.get('appointmentId') as string;
+		if (!appointmentId) return;
+
+		// Brišemo zapis direktno preko Prisme (db)
+		await db.appointment.delete({
+			where: { id: appointmentId },
+		});
+
+		// Instant osvežavanje tabele na ekranu
 		revalidatePath('/dashboard/appointments');
 	}
 
@@ -227,12 +261,25 @@ export default async function AppointmentsPage() {
 					) : (
 						<div className='space-y-4'>
 							{business.appointments?.map((app) => {
-								// Bezbedno izvlačenje ISO stringova za stabilan klijentski prikaz bez Hydration grešaka
-								const timeStartRaw = app.startTime
-									.toISOString()
-									.substring(11, 16);
-								const timeEndRaw = app.endTime.toISOString().substring(11, 16);
-								const dateRaw = app.startTime.toISOString().substring(0, 10);
+								// 🌟 Formatizeri koji garantuju tačno vreme u našoj vremenskoj zoni (Prag/Evropa)
+								const timeFormatter = new Intl.DateTimeFormat('de-DE', {
+									hour: '2-digit',
+									minute: '2-digit',
+									timeZone: 'Europe/Prague',
+								});
+
+								const dateFormatter = new Intl.DateTimeFormat('de-DE', {
+									year: 'numeric',
+									month: '2-digit',
+									day: '2-digit',
+									timeZone: 'Europe/Prague',
+								});
+
+								// 🌟 Izvuci tačne vrednosti direktno iz Date objekta
+								const timeStartRaw = timeFormatter.format(app.startTime);
+								const timeEndRaw = timeFormatter.format(app.endTime);
+								// Prebacuje u čist DD.MM.YYYY format prilagođen Evropi
+								const dateRaw = dateFormatter.format(app.startTime);
 
 								return (
 									<div
@@ -271,6 +318,7 @@ export default async function AppointmentsPage() {
 											)}
 										</div>
 
+										{/* DESNA STRANA KARTICE: CENA, STATUS I BRISANJE */}
 										<div className='flex items-center justify-between md:justify-end gap-4 border-t md:border-t-0 border-zinc-900 pt-3 md:pt-0 shrink-0'>
 											<span className='text-emerald-400 text-sm font-bold'>
 												{app.service.price} KČ
@@ -278,6 +326,22 @@ export default async function AppointmentsPage() {
 											<span className='text-[10px] px-2 py-1 bg-zinc-900 border border-zinc-800 text-emerald-400 uppercase tracking-wider font-bold'>
 												{app.status}
 											</span>
+
+											{/* 🌟 MALA FORM-AKCIJA ZA BRISANJE OVOG TERMINA */}
+											<form
+												action={deleteAppointment}
+												className='inline-block'>
+												<input
+													type='hidden'
+													name='appointmentId'
+													value={app.id}
+												/>
+												<button
+													type='submit'
+													className='text-[10px] uppercase tracking-wider text-zinc-600 hover:text-red-400 border border-zinc-900 hover:border-red-950/40 bg-transparent hover:bg-red-950/10 px-2 py-1 transition-all h-7'>
+													[ TERMINATE ]
+												</button>
+											</form>
 										</div>
 									</div>
 								);
